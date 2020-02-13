@@ -16,7 +16,6 @@ exports.handler = async (event) => {
     if (fromDate && toDate) {
         searchQuery = getSearchQueryWithDate(deviceId, fromDate, toDate);
     } else {
-        //searchQuery = getLastNHrsData(deviceId, 4);
         searchQuery = getLastNRows(deviceId, SEVEN_DAYS_OF_DATA);
     }
 
@@ -47,6 +46,7 @@ function getResponse(statusCode, message) {
         body: JSON.stringify({message: message}),
         headers: {
             'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'*'
         }
     };
 }
