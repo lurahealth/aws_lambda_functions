@@ -62,9 +62,9 @@ function getReturnBody(searchResult, dataResult) {
     return {
         rowCount: searchResult.rowCount,
         rows: searchResult.rows,
-        average: data.average,
-        min: data.min,
-        max: data.max,
+        average: Math.round(data.average),
+        min: Math.round(data.min),
+        max: Math.round(data.max),
     };
 }
 
