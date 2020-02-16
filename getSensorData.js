@@ -13,10 +13,13 @@ exports.handler = async (event) => {
     const client = new Client();
 
     let searchQuery = "";
+    let dataQuery = "";
     if (fromDate && toDate) {
         searchQuery = getSearchQueryWithDate(deviceId, fromDate, toDate);
+        dataQuery = getDataQueryWithDate(deviceId, fromDate, toDate);
     } else {
         searchQuery = getLastNRows(deviceId, SEVEN_DAYS_OF_DATA);
+        dataQuery = getDataFromNRows(deviceId, SEVEN_DAYS_OF_DATA);
     }
 
     console.log("Search query: " + searchQuery);
@@ -26,7 +29,10 @@ exports.handler = async (event) => {
 
         const searchResult = await client.query(searchQuery);
 
-        response = getResponse(200, getReturnBody(searchResult))
+        const dataResult = await client.query(dataQuery);
+        console.log(dataResult);
+
+        response = getResponse(200, getReturnBody(searchResult, dataResult));
     } catch (e) {
         response = {
             statusCode: 500,
@@ -51,24 +57,27 @@ function getResponse(statusCode, message) {
     };
 }
 
-function getReturnBody(searchResult) {
+function getReturnBody(searchResult, dataResult) {
+    const data = dataResult.rows[0];
     return {
         rowCount: searchResult.rowCount,
-        rows: searchResult.rows
+        rows: searchResult.rows,
+        average: data.average,
+        min: data.min,
+        max: data.max,
     };
 }
 
 function getSearchQueryWithDate(deviceId, fromDate, toDate) {
-    return `SELECT * FROM sensor_data WHERE device_id = '${deviceId}' and 
-                                            time_stamp between '${fromDate}' and '${toDate}';`;
+    return `SELECT * 
+            FROM sensor_data 
+            WHERE device_id = '${deviceId}' and time_stamp between '${fromDate}' and '${toDate}';`;
 }
 
-function getLastNHrsData(deviceId, N) {
-    return `SELECT * FROM (
-            SELECT * FROM sensor_data WHERE device_id = '${deviceId}' and 
-                                            time_stamp BETWEEN NOW() - INTERVAL '${N} HOURS' AND NOW() 
-                                            ORDER BY time_stamp DESC LIMIT 100 ) as rows
-                                            ORDER BY rows.time_stamp ASC;`;
+function getDataQueryWithDate(deviceId, fromDate, toDate) {
+    return `SELECT AVG(ph) as average, MIN(ph) as min, MAX(ph) as max, time_stamp, device_id 
+            FROM sensor_data 
+            WHERE device_id = '${deviceId}' and time_stamp between '${fromDate}' and '${toDate}';`;
 }
 
 function getLastNRows(deviceId, N) {
@@ -77,3 +86,12 @@ function getLastNRows(deviceId, N) {
                                             ORDER BY time_stamp DESC LIMIT '${N}') as rows
                                             ORDER BY rows.time_stamp ASC;`;
 }
+
+function getDataFromNRows(deviceId, N) {
+    return `SELECT AVG(ph) as average, MIN(ph) as min, MAX(ph) as max FROM (
+            SELECT ph, time_stamp, device_id
+            FROM sensor_data WHERE device_id = '${deviceId}' 
+            ORDER BY time_stamp DESC LIMIT '${N}') as rows`;
+}
+
+
