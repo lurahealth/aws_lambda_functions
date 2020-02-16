@@ -75,9 +75,10 @@ function getSearchQueryWithDate(deviceId, fromDate, toDate) {
 }
 
 function getDataQueryWithDate(deviceId, fromDate, toDate) {
-    return `SELECT AVG(ph) as average, MIN(ph) as min, MAX(ph) as max, time_stamp, device_id 
+    return `SELECT AVG(ph) as average, MIN(ph) as min, MAX(ph) as max FROM (
+            SELECT ph, time_stamp, device_id 
             FROM sensor_data 
-            WHERE device_id = '${deviceId}' and time_stamp between '${fromDate}' and '${toDate}';`;
+            WHERE device_id = '${deviceId}' and time_stamp between '${fromDate}' and '${toDate}') as rows`;
 }
 
 function getLastNRows(deviceId, N) {
