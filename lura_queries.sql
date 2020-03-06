@@ -40,3 +40,10 @@ select  * from
 (select count(*) used from pg_stat_activity) active_connectinos,
 (select setting::int res_for_super from pg_settings where name=$$superuser_reserved_connections$$) superuser_reserved_connections,
 (select setting::int max_conn from pg_settings where name=$$max_connections$$) max_connections;
+
+-- creating the unique contraint between time_stamp and device_id
+ALTER TABLE sensor_data
+ADD CONSTRAINT time_device_constraint UNIQUE (time_stamp, device_id);
+
+-- deleting rows
+DELETE FROM sensor_data WHERE time_stamp = '52072-02-27 16:48:43.000064+00';
