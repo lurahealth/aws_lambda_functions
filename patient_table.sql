@@ -1,0 +1,19 @@
+-- creating a patients data table
+CREATE TABLE patients(
+  patient_id            SERIAL  PRIMARY KEY,
+  dentist_email         TEXT    NOT NULL,
+  patient_name          TEXT    NULL,
+  patient_email         TEXT    NOT NULL,
+  patient_reference     TEXT    NOT NULL
+);
+
+Table "public.patients"
+Column       |  Type   | Collation | Nullable |                   Default
+-------------------+---------+-----------+----------+----------------------------------------------
+patient_id        | integer |           | not null | nextval('patients_patient_id_seq'::regclass)
+dentist_email     | text    |           | not null |
+patient_name      | text    |           |          |
+patient_email     | text    |           | not null |
+patient_reference | text    |           | not null |
+-- Indexes:
+    -- "patients_pkey" PRIMARY KEY, btree (patient_id)
