@@ -14,7 +14,6 @@ exports.handler = async (event, context, callback) => {
             const dentistInsertQuery = getInsertDentistQuery(email);
             console.log(dentistInsertQuery);
             const insertQueryResult = await client.query(dentistInsertQuery);
-            console.log(insertQueryResult);
             if(insertQueryResult.rowCount === 1){
                 console.log("\nDentist registered!");
                 callback(null, event);
@@ -24,11 +23,19 @@ exports.handler = async (event, context, callback) => {
             }
         } else{
             console.log("\nIs a patient");
-            const patientCountQuery = checkPatinetQuery(email);
+            const patientCountQuery = checkPatientQuery(email);
             console.log(patientCountQuery);
             const patientCheckResult = await client.query(patientCountQuery);
             console.log("\n");
             console.log(patientCheckResult);
+            const rowCount = patientCheckResult.rowCount;
+            if(rowCount === 1){
+                console.log("Patient found!");
+                callback(null, event);
+            }else if(rowCount === 0){
+                console.log("\nError patient not registered by dentist yet!");
+                callback (new Error("Error patient not registered by dentist yet!"), event);
+            }
         }
 
     } catch (e) {
@@ -39,10 +46,10 @@ exports.handler = async (event, context, callback) => {
     }
 };
 
-function getInsertDentistQuery(dentistEmail) {
-    return `INSERT INTO dentists (dentist_email) VALUES ('${dentistEmail}')`;
+function getInsertDentistQuery(patientName) {
+    return `UPDATE patients SET patient_name = '${patientName}')`;
 }
 
-function checkPatinetQuery(patientEmail) {
-    return `SELECT COUNT(*) FROM patients WHERE patient_email = '${patientEmail}'`;
+function checkPatientQuery(patientEmail) {
+    return `SELECT * FROM patients WHERE patient_email = '${patientEmail}'`;
 }
