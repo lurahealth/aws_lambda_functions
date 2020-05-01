@@ -14,6 +14,7 @@ exports.handler = async (event, context, callback) => {
             const dentistInsertQuery = getInsertDentistQuery(email);
             console.log(dentistInsertQuery);
             const insertQueryResult = await client.query(dentistInsertQuery);
+            console.log(insertQueryResult);
             if(insertQueryResult.rowCount === 1){
                 console.log("\nDentist registered!");
                 callback(null, event);
