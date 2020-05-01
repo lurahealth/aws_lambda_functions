@@ -15,5 +15,9 @@ dentist_email     | text    |           | not null |
 patient_name      | text    |           |          |
 patient_email     | text    |           | not null |
 patient_reference | text    |           | not null |
--- Indexes:
-    -- "patients_pkey" PRIMARY KEY, btree (patient_id)
+Indexes:
+"patients_pkey" PRIMARY KEY, btree (patient_id)
+"patients_patient_email_key" UNIQUE CONSTRAINT, btree (patient_email)
+
+
+ALTER TABLE patients ADD UNIQUE (patient_email);
