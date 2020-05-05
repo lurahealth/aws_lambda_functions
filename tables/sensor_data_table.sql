@@ -13,24 +13,30 @@ CREATE TABLE sensor_data(
 );
 
 -- sensor data table description
+Table "public.sensor_data"
 Column      |           Type           | Collation | Nullable | Default
 -----------------+--------------------------+-----------+----------+---------
 time_stamp      | timestamp with time zone |           | not null |
-device_id       | text                     |           | not null |
+user_name       | text                     |           | not null |
 ph              | double precision         |           |          |
 temperature     | double precision         |           |          |
 connection_time | double precision         |           |          |
 notes           | text                     |           |          |
 battery         | double precision         |           |          |
 Indexes:
+"time_device_constraint" UNIQUE CONSTRAINT, btree (time_stamp, user_name)
 "sensor_data_time_stamp_idx" btree (time_stamp DESC)
 Triggers:
 ts_insert_blocker BEFORE INSERT ON sensor_data FOR EACH ROW EXECUTE PROCEDURE _timescaledb_internal.insert_blocker()
+Number of child tables: 69 (Use \d+ to list them.)
 
 
 
 ALTER TABLE sensor_data
   ADD COLUMN battery DOUBLE PRECISION NULL;
+
+ALTER TABLE sensor_data
+  RENAME COLUMN device_id TO user_name;
 
 -- converting to hypertable (making it a time series table)
 SELECT create_hypertable('"sensor_data"', 'time_stamp');
