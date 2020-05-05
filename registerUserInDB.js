@@ -5,6 +5,7 @@ exports.handler = async (event, context, callback) => {
     const isDentist = event.request.userAttributes["custom:isDentist"];
     console.log(isDentist);
     const email = event.request.userAttributes["email"];
+    const name = event.request.userAttributes["name"];
     const client = new Client();
     try {
         await client.connect();
@@ -23,7 +24,7 @@ exports.handler = async (event, context, callback) => {
             }
         } else{
             console.log("\nIs a patient");
-            const patientCountQuery = checkPatientQuery(email);
+            const patientCountQuery = checkPatientQuery(email, name);
             console.log(patientCountQuery);
             const patientCheckResult = await client.query(patientCountQuery);
             console.log("\n");
@@ -46,10 +47,14 @@ exports.handler = async (event, context, callback) => {
     }
 };
 
-function getInsertDentistQuery(patientName) {
-    return `UPDATE patients SET patient_name = '${patientName}')`;
+function getInsertDentistQuery(dentistEmail) {
+    return `INSERT INTO dentists (dentist_email) VALUES ('${dentistEmail}')`;
 }
 
-function checkPatientQuery(patientEmail) {
-    return `SELECT * FROM patients WHERE patient_email = '${patientEmail}'`;
+// tries to update a patient with the email address provided.
+// if the update works we will know the patient with the email address has been registered by a dentist
+function checkPatientQuery(patientEmail, patientName) {
+    return `UPDATE patients
+            SET patient_name = '${patientName}', confirmed = TRUE
+            WHERE patient_email = '${patientEmail}'`;
 }
