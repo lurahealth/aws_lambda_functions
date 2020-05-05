@@ -29,8 +29,6 @@ exports.handler = async (event, context, callback) => {
     } finally {
         client.end();
     }
-
-    callback(null, getResponse(200,patientEmail));
 };
 
 function getInsertPatientQuery(patientName, patientEmail, patientReference, dentistEmail) {
@@ -42,7 +40,7 @@ function getInsertPatientQuery(patientName, patientEmail, patientReference, dent
 
 function getResponse(statusCode, body) {
     return {
-        status : statusCode,
+        statusCode : statusCode,
         body : JSON.stringify(body),
         isBase64Encoded : false,
         headers: {
