@@ -26,7 +26,7 @@ function getPatients(dentistEmail) {
 
 function getResponse(statusCode, body) {
     return {
-        status : statusCode,
+        statusCode : statusCode,
         body : JSON.stringify(body),
         isBase64Encoded : false,
         headers: {
