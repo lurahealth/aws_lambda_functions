@@ -31,24 +31,24 @@ exports.handler = async (event) => {
     // getting column headers
     const cs = getColumnSet();
 
+
+
     // generating insert query
     const insertQuery = pgp.helpers.insert(data, cs);
     console.log(insertQuery);
 
-    // inserting data into the DB.
-    // wrapping into in a task so we have a single error handler.
     db.task('inserting-sensor-data', t => {
         const insert = pgp.helpers.insert(data, cs);
         return t.none(insert);
     }).then(
-            response = getResponse(200, "Data inserted")
-        )
-      .catch(error => {
+        response = getResponse(200, "Data inserted")
+    )
+        .catch(error => {
             response = getResponse(500, "Error inserting data " + error)
         });
 
 
-    console.log(response.toString());
+    console.log(response);
 
     return response;
 };
@@ -70,7 +70,7 @@ function getColumnSet() {
             mod: ':raw',
             init: c => pgp.as.format(`to_timestamp(${c.value}) AT TIME ZONE 'UTC'`, c)
         },
-        'device_id','ph','temperature',
+        'user_name','ph','temperature',
         'connection_time','notes','battery'
     ], {table: 'sensor_data'});
 }
