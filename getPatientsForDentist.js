@@ -11,7 +11,7 @@ exports.handler = async (event, context, callback) => {
         await client.connect();
         const patientsResult = await client.query(patientsQuery);
         console.log(patientsResult);
-        callback(null, getResponse(200, patientsResult.rows));
+        callback(null, getResponse(200, patientsResult));
     }catch (e) {
         console.log(e);
         callback(new Error(e.toString()), null);
@@ -24,14 +24,21 @@ function getPatients(dentistEmail) {
     return `SELECT * FROM patients WHERE dentist_email = '${dentistEmail}'`;
 }
 
-function getResponse(statusCode, body) {
+function getResponse(statusCode, queryResult) {
     return {
         statusCode : statusCode,
-        body : JSON.stringify(body),
+        body : JSON.stringify(getResponseBody(queryResult)),
         isBase64Encoded : false,
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin':'*'
         }
     };
+}
+
+function getResponseBody(queryResult) {
+    return{
+        rowCount: queryResult.rowCount,
+        patients: queryResult.rows
+    }
 }
