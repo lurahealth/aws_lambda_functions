@@ -2,37 +2,45 @@ const SEVEN_DAYS_OF_DATA = 4*24*7;// 4 data points per hour, 24 hrs in a day 7 d
 
 const {Client} = require('pg'); //  Needs the nodePostgres Lambda Layer
 
-exports.handler = async (event) => {
-    console.log('processing event: %j', event.queryStringParameters);
-    let response = {};
+exports.handler = async (event, context, callback) => {
+    console.log('processing event: %j', event);
     const parameters = event.queryStringParameters;
     const fromDate = parameters.from;
     const toDate = parameters.to;
-    const deviceId = parameters.deviceId;
+    const userName = parameters.userName;
 
+    let response = {};
     const client = new Client();
 
     let searchQuery = "";
-    let dataQuery = "";
+    // let dataQuery = "";
+    // if (fromDate && toDate) {
+    //     searchQuery = getSearchQueryWithDate(userName, fromDate, toDate);
+    //     dataQuery = getDataQueryWithDate(userName, fromDate, toDate);
+    // } else {
+    //     searchQuery = getLastNRows(userName, SEVEN_DAYS_OF_DATA);
+    //     dataQuery = getDataFromNRows(userName, SEVEN_DAYS_OF_DATA);
+    // }
+    // console.log("Search query: " + searchQuery);
+    // console.log("Data query: "+ dataQuery);
+
     if (fromDate && toDate) {
-        searchQuery = getSearchQueryWithDate(deviceId, fromDate, toDate);
-        dataQuery = getDataQueryWithDate(deviceId, fromDate, toDate);
+        searchQuery = getSearchQueryWithDate(userName, fromDate, toDate);
     } else {
-        searchQuery = getLastNRows(deviceId, SEVEN_DAYS_OF_DATA);
-        dataQuery = getDataFromNRows(deviceId, SEVEN_DAYS_OF_DATA);
+        searchQuery = getAllDataForUser(userName);
     }
 
-    console.log("Search query: " + searchQuery);
+    console.log(searchQuery);
 
     try {
         await client.connect();
 
         const searchResult = await client.query(searchQuery);
 
-        const dataResult = await client.query(dataQuery);
-        console.log(dataResult);
+        // const dataResult = await client.query(dataQuery);
+        console.log(searchResult);
 
-        response = getResponse(200, getReturnBody(searchResult, dataResult));
+        response = getResponse(200, getReturnBody(searchResult));
     } catch (e) {
         response = {
             statusCode: 500,
@@ -57,42 +65,46 @@ function getResponse(statusCode, message) {
     };
 }
 
-function getReturnBody(searchResult, dataResult) {
-    const data = dataResult.rows[0];
+function getReturnBody(searchResult) {
+    // const data = dataResult.rows[0];
     return {
         rowCount: searchResult.rowCount,
         rows: searchResult.rows,
-        average: Math.round(data.average),
-        min: Math.round(data.min),
-        max: Math.round(data.max),
+        // average: Math.round(data.average),
+        // min: Math.round(data.min),
+        // max: Math.round(data.max),
     };
 }
 
-function getSearchQueryWithDate(deviceId, fromDate, toDate) {
+function getAllDataForUser(userName) {
+    return `SELECT * FROM (
+            SELECT * FROM sensor_data WHERE user_name = '${userName}') as rows
+            ORDER BY rows.time_stamp ASC;`;
+}
+
+function getSearchQueryWithDate(userName, fromDate, toDate) {
     return `SELECT * 
             FROM sensor_data 
-            WHERE device_id = '${deviceId}' and time_stamp between '${fromDate}' and '${toDate}';`;
+            WHERE user_name = '${userName}' and time_stamp between '${fromDate}' and '${toDate}';`;
 }
 
-function getDataQueryWithDate(deviceId, fromDate, toDate) {
+function getDataQueryWithDate(userName, fromDate, toDate) {
     return `SELECT AVG(ph) as average, MIN(ph) as min, MAX(ph) as max FROM (
-            SELECT ph, time_stamp, device_id 
+            SELECT ph, time_stamp, user_name 
             FROM sensor_data 
-            WHERE device_id = '${deviceId}' and time_stamp between '${fromDate}' and '${toDate}') as rows`;
+            WHERE user_name = '${userName}' and time_stamp between '${fromDate}' and '${toDate}') as rows`;
 }
 
-function getLastNRows(deviceId, N) {
+function getLastNRows(userName, N) {
     return `SELECT * FROM (
-            SELECT * FROM sensor_data WHERE device_id = '${deviceId}' 
+            SELECT * FROM sensor_data WHERE user_name = '${userName}' 
                                             ORDER BY time_stamp DESC LIMIT '${N}') as rows
                                             ORDER BY rows.time_stamp ASC;`;
 }
 
-function getDataFromNRows(deviceId, N) {
+function getDataFromNRows(userName, N) {
     return `SELECT AVG(ph) as average, MIN(ph) as min, MAX(ph) as max FROM (
-            SELECT ph, time_stamp, device_id
-            FROM sensor_data WHERE device_id = '${deviceId}' 
+            SELECT ph, time_stamp, user_name
+            FROM sensor_data WHERE user_name = '${userName}' 
             ORDER BY time_stamp DESC LIMIT '${N}') as rows`;
 }
-
-
