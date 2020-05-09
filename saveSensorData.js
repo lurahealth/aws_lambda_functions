@@ -31,8 +31,6 @@ exports.handler = async (event) => {
     // getting column headers
     const cs = getColumnSet();
 
-
-
     // generating insert query
     const insertQuery = pgp.helpers.insert(data, cs);
     console.log(insertQuery);
