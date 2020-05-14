@@ -53,3 +53,14 @@ ADD CONSTRAINT time_device_constraint UNIQUE (time_stamp, device_id);
 
 -- deleting rows
 DELETE FROM sensor_data WHERE time_stamp = '52072-02-27 16:48:43.000064+00';
+
+select count(*) from sensor_data where user_name = 'noah@uchubiosensors.com';
+
+-- kill all other active connectionsSELECT
+SELECT
+	pg_terminate_backend(pg_stat_activity.pid)
+FROM
+	pg_stat_activity
+WHERE
+	pg_stat_activity.datname = 'sensor_data'
+	AND pid <> pg_backend_pid();
