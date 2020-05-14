@@ -42,8 +42,9 @@ exports.handler = async (event) => {
         response = getResponse(200, "Data inserted")
     )
         .catch(error => {
-            response = getResponse(500, "Error inserting data " + error)
-        });
+            response = getResponse(500, "Error inserting data " + error);
+        })
+        .finally(db.$pool.end()) ;
 
 
     console.log(response);
