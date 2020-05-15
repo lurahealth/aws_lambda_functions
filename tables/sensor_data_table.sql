@@ -13,6 +13,7 @@ CREATE TABLE sensor_data(
 );
 
 -- sensor data table description
+\d <table_name>
 Table "public.sensor_data"
 Column      |           Type           | Collation | Nullable | Default
 -----------------+--------------------------+-----------+----------+---------
@@ -29,7 +30,6 @@ Indexes:
 Triggers:
 ts_insert_blocker BEFORE INSERT ON sensor_data FOR EACH ROW EXECUTE PROCEDURE _timescaledb_internal.insert_blocker()
 Number of child tables: 69 (Use \d+ to list them.)
-
 
 
 ALTER TABLE sensor_data
@@ -54,7 +54,7 @@ ADD CONSTRAINT time_device_constraint UNIQUE (time_stamp, device_id);
 -- deleting rows
 DELETE FROM sensor_data WHERE time_stamp = '52072-02-27 16:48:43.000064+00';
 
-select count(*) from sensor_data where user_name = 'noah@uchubiosensors.com';
+select count(*) from sensor_data where user_name = 'dev@lurahealth.com';
 
 -- kill all other active connectionsSELECT
 SELECT
