@@ -24,12 +24,13 @@ temperature     | double precision         |           |          |
 connection_time | double precision         |           |          |
 notes           | text                     |           |          |
 battery         | double precision         |           |          |
+ph_milli_volt   | double precision         |           |          |
 Indexes:
 "time_device_constraint" UNIQUE CONSTRAINT, btree (time_stamp, user_name)
 "sensor_data_time_stamp_idx" btree (time_stamp DESC)
 Triggers:
 ts_insert_blocker BEFORE INSERT ON sensor_data FOR EACH ROW EXECUTE PROCEDURE _timescaledb_internal.insert_blocker()
-Number of child tables: 69 (Use \d+ to list them.)
+Number of child tables: 104 (Use \d+ to list them.)
 
 
 ALTER TABLE sensor_data
@@ -37,6 +38,9 @@ ALTER TABLE sensor_data
 
 ALTER TABLE sensor_data
   RENAME COLUMN device_id TO user_name;
+
+ALTER TABLE sensor_data
+  ADD COLUMN ph_milli_volt DOUBLE PRECISION NULL;
 
 -- converting to hypertable (making it a time series table)
 SELECT create_hypertable('"sensor_data"', 'time_stamp');
@@ -56,7 +60,9 @@ DELETE FROM sensor_data WHERE time_stamp = '52072-02-27 16:48:43.000064+00';
 
 select count(*) from sensor_data where user_name = 'dev@lurahealth.com';
 
--- kill all other active connectionsSELECT
+select * from sensor_data where user_name = 'dev@lurahealth.com';
+
+-- kill all other active connectionsS
 SELECT
 	pg_terminate_backend(pg_stat_activity.pid)
 FROM
