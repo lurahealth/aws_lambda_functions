@@ -83,10 +83,14 @@ function getAllDataForUser(userName) {
 }
 
 function getSearchQueryWithDate(userName, fromDate, toDate) {
-    return `SELECT * 
-            FROM sensor_data 
-            WHERE user_name = '${userName}' and time_stamp between '${fromDate}' and '${toDate}';`;
+    return `SELECT * FROM (
+            SELECT * FROM sensor_data 
+            WHERE user_name = '${userName}' and 
+                  time_stamp between '${fromDate}' and '${toDate}' 
+                  and ph > 0) as rows
+            ORDER BY rows.time_stamp ASC;`;
 }
+
 
 function getDataQueryWithDate(userName, fromDate, toDate) {
     return `SELECT AVG(ph) as average, MIN(ph) as min, MAX(ph) as max FROM (
