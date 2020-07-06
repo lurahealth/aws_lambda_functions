@@ -21,7 +21,7 @@ const db = pgp(connectionParams);
 
 exports.handler = async (event) => {
     let response = {};
-    // console.log('processing event: %j', event.body);
+    console.log('processing event: %j', event);
     const body = JSON.parse(event.body);
 
     // getting the data to be inserted from the API gateway event
@@ -43,8 +43,10 @@ exports.handler = async (event) => {
     )
         .catch(error => {
             response = getResponse(500, "Error inserting data " + error);
-        })
-        .finally(db.$pool.end()) ;
+        });
+    // .finally(db.$pool.end()) ;
+    // closing the connection on the psql side with https://postgresqlco.nf/en/doc/param/idle_in_transaction_session_timeout/
+    // https://stackoverflow.com/questions/12391174/how-to-close-idle-connections-in-postgresql-automatically
 
 
     console.log(response);
@@ -70,7 +72,7 @@ function getColumnSet() {
             init: c => pgp.as.format(`to_timestamp(${c.value}) AT TIME ZONE 'UTC'`, c)
         },
         'user_name','ph','temperature',
-        'connection_time','notes','battery'
+        'connection_time','notes','battery','ph_milli_volt'
     ], {table: 'sensor_data'});
 }
 
